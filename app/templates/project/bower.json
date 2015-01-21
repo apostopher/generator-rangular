@@ -1,0 +1,20 @@
+{
+  "name": "<%= name %>",
+  "version": "1.0.0",
+  "authors": [
+    "Rahul Devaskar <apostopher@gmail.com>"
+  ],
+  "main": "client/index.html",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-ui-router": "~0.2.13"
+  }
+}

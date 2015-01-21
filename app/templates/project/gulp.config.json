@@ -1,0 +1,6 @@
+{
+  "js_files": [
+    "./client/src/**/*.module.js",
+    "./client/src/**/*.js"
+  ]
+}
