@@ -8,6 +8,7 @@
     .module('<%= name %>', [
       '<%= name %>.core',
       '<%= name %>.common',
+      '<%= name %>.analytics',
       '<%= name %>.home'
     ]);
 }());

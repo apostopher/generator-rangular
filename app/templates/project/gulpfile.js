@@ -11,17 +11,17 @@ var stylish = require('jshint-stylish');
 var config = require('./gulp.config.json');
 
 gulp.task('sass', function () {
-  gulp.src('./client/src/**/*.scss')
+  gulp.src(['./client/src/**/*.base.scss', './client/src/**/*.scss'])
     .pipe(plug.sass())
     .pipe(plug.concat('all.css'))
     .pipe(gulp.dest('./client/build/css'))
-    .pipe(plug.minifyCss({keepBreaks:true}))
+    .pipe(plug.minifyCss({keepBreaks: true}))
     .pipe(plug.rename({extname: '.min.css'}))
     .pipe(gulp.dest('./client/build/css'));
 
 });
 
-gulp.task('js', function(){
+gulp.task('js', ['templatecache'], function () {
   var DEST = './client/build/js';
   return gulp.src(config.js_files)
     .pipe(plug.ngAnnotate())
@@ -34,7 +34,7 @@ gulp.task('js', function(){
     .pipe(gulp.dest(DEST));
 });
 
-gulp.task('img', function(){
+gulp.task('img', function () {
   return gulp.src('./client/src/**/*.{jpg,png,gif,svg}')
     .pipe(plug.imagemin({
       progressive: true,
@@ -44,10 +44,27 @@ gulp.task('img', function(){
     .pipe(gulp.dest('./client/build/img'));
 });
 
-gulp.task('lint', function() {
+gulp.task('video', function () {
+  return gulp.src('./client/src/**/*.{mp4,webm,ogg}')
+    .pipe(gulp.dest('./client/build/video'));
+});
+
+gulp.task('templatecache', function () {
+  return gulp.src('./client/src/**/*.html')
+    .pipe(plug.minifyHtml({empty: true}))
+    .pipe(plug.angularTemplatecache('core.templates.js', {module: '<%= name %>.core', standalone: false, root: 'src/'}))
+    .pipe(plug.header('"use strict";\n'))
+    .pipe(gulp.dest('./client/src/core'));
+});
+
+gulp.task('lint', function () {
   return gulp.src(['./client/src/**/*.js', './server/**/*.js'])
     .pipe(plug.jshint('./.jshintrc'))
     .pipe(plug.jshint.reporter(stylish));
 });
 
-gulp.task('build', ['lint','sass', 'js', 'img']);
+gulp.task('watch', function () {
+  gulp.watch(['./client/src/**/*'], ['build']);
+});
+
+gulp.task('build', ['lint', 'sass', 'js', 'img', 'video']);

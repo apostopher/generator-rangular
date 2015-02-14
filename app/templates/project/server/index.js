@@ -11,6 +11,9 @@ var cons = require('consolidate');
 
 var config = require('./config/config');
 
+// Modules
+var database = require('./modules/database');
+
 var webapp = path.join(__dirname, '/../client');
 var app = express();
 
@@ -25,7 +28,10 @@ app.engine('html', cons.swig);
 app.set('view engine', 'html');
 app.set('views', webapp);
 
-app.get('/', function(req, res){
+// Modules
+app.use(database);
+
+app.get('/', function (req, res) {
   'use strict';
   res.render('index');
 });

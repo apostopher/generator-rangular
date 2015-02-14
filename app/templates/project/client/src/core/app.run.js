@@ -5,7 +5,8 @@
 (function () {
   'use strict';
   angular.module('<%= name %>')
-    .run(function(){
-      // App is ready!
+    /* @ngInject */
+    .run(function (analyticsService) {
+      analyticsService.trackPageViews();
     });
 }());

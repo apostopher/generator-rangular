@@ -12,12 +12,12 @@ module.exports = generators.NamedBase.extend(config);
 
 //Implementation ---
 
-function BuildProject(){
+function BuildProject() {
   'use strict';
   var self = this;
   var name = self.name;
   var dest = self.destinationPath(name);
 
-  self.fs.copyTpl(self.templatePath('project/**/*.{js,scss,html,json}'), dest, {name: name});
+  self.fs.copyTpl(self.templatePath('project/**/*.{js,scss,html,json,conf}'), dest, {name: name});
   self.fs.copy(self.templatePath('project/**/.[^D]*'), dest);
 }
