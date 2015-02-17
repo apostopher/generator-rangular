@@ -1,5 +1,8 @@
 {
   "directory": "client/bower_components/",
   "analytics": false,
-  "timeout": 120000
+  "timeout": 120000,
+  "scripts": {
+    "postinstall": "gulp bower"
+  }
 }

@@ -16,7 +16,8 @@
     var ga = angular.isFunction($window.ga) ? $window.ga : angular.noop;
     return {
       trackPageViews: trackPageViews,
-      trackEvent: trackEvent
+      trackEvent: trackEvent,
+      ga: ga
     };
 
     //Implementation ---
@@ -29,8 +30,14 @@
       });
     }
 
-    function trackEvent(category, action, data) {
-      ga('send', 'event', category, action, data);
+    function trackEvent(category, action, label) {
+      var options = {
+        eventCategory: category,
+        eventAction: action,
+        eventLabel: label,
+        useBeacon: true
+      };
+      ga('send', 'event', options);
     }
   }
 }());

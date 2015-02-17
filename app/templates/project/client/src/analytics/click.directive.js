@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   angular
-    .module('authapp.analytics')
+    .module('<%= name %>.analytics')
     .directive('gaClick', gaClickDirective);
 
   gaClickDirective.$inject = ['analyticsService'];
@@ -14,19 +14,16 @@
   function gaClickDirective(analyticsService) {
     return {
       scope: {
-        gaClick: '='
+        gaClick: '@'
       },
       link: function (scope, element) {
         element.on('click', reportClickEvent);
 
         //Implementation ---
         function reportClickEvent() {
-          var data = scope.gaClick;
-          if(angular.isObject(data)){
-            analyticsService.trackEvent('element', 'click', data.label, data.value);
-          }else{
-            analyticsService.trackEvent('element', 'click', data);
-          }
+          var label = scope.gaClick;
+          analyticsService.trackEvent('element', 'click', label);
+
         }
       }
     };

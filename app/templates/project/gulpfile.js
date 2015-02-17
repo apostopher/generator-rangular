@@ -1,70 +1,109 @@
-/**
- * Created by Rahul on 21/1/15.
- */
-
 'use strict';
 
 var gulp = require('gulp');
-var plug = require('gulp-load-plugins')();
-var pngquant = require('imagemin-pngquant');
+var $ = require('gulp-load-plugins')();
+var config = require('./gulp.config');
+var del = require('del');
 var stylish = require('jshint-stylish');
-var config = require('./gulp.config.json');
+var wiredep = require('wiredep').stream;
+var browserSync = require('browser-sync');
 
-gulp.task('sass', function () {
-  gulp.src(['./client/src/**/*.base.scss', './client/src/**/*.scss'])
-    .pipe(plug.sass())
-    .pipe(plug.concat('all.css'))
-    .pipe(gulp.dest('./client/build/css'))
-    .pipe(plug.minifyCss({keepBreaks: true}))
-    .pipe(plug.rename({extname: '.min.css'}))
-    .pipe(gulp.dest('./client/build/css'));
+// Tasks ---
+gulp.task('default', $.taskListing);
 
+gulp.task('clean', function(done){
+  var toBeCleaned = [].concat(config.allCssFiles, config.destFiles);
+  del(toBeCleaned, done);
 });
 
-gulp.task('js', ['templatecache'], function () {
-  var DEST = './client/build/js';
-  return gulp.src(config.js_files)
-    .pipe(plug.ngAnnotate())
-    .pipe(plug.concat('all.js'))
-    // This will output the non-minified version
-    .pipe(gulp.dest(DEST))
-    // This will minify and rename to foo.min.js
-    .pipe(plug.uglify())
-    .pipe(plug.rename({extname: '.min.js'}))
-    .pipe(gulp.dest(DEST));
+gulp.task('lint', function(){
+  return gulp.src(config.allJsFiles)
+    .pipe($.jscs('./.jscsrc'))
+    .pipe($.jshint('./.jshintrc'))
+    .pipe($.jshint.reporter(stylish));
 });
 
-gulp.task('img', function () {
-  return gulp.src('./client/src/**/*.{jpg,png,gif,svg}')
-    .pipe(plug.imagemin({
-      progressive: true,
-      svgoPlugins: [{removeViewBox: false}],
-      use: [pngquant()]
+gulp.task('styles', function(){
+  return gulp.src(config.allScssFiles)
+    .pipe($.plumber())
+    .pipe($.sass())
+    .pipe($.autoprefixer({browsers: ['last 2 version', '> 4%']}))
+    .pipe(gulp.dest(config.sourceLocation));
+});
+
+gulp.task('bower', function () {
+  return gulp.src(config.indexFile)
+    .pipe(wiredep(config.wiredepOptions))
+    .pipe(gulp.dest(config.clientLocation));
+});
+
+gulp.task('dev', ['lint', 'styles', 'bower'], function(){
+  var allFiles = [].concat(config.allCssFiles, config.clientJsFiles);
+  return gulp.src(config.indexFile)
+    .pipe($.inject(gulp.src(allFiles, {read: false}), config.injectOptions))
+    .pipe(gulp.dest(config.clientLocation));
+});
+
+gulp.task('serve', ['dev'], function(){
+  return $.nodemon(config.nodemonOptions)
+    .on('restart', function () {
+      setTimeout(function () {
+        browserSync.notify('reloading now...');
+        browserSync.reload({stream: false});
+      }, 1000);
+    })
+    .on('start', function () {
+      startBrowserSync();
+    });
+});
+
+gulp.task('build', ['clean', 'dev'], function(){
+  var assets = $.useref.assets({searchPath: config.clientLocation});
+  var cssFilter = $.filter('**/*.css');
+  var jsAppFilter = $.filter('**/' + config.optimized.app);
+  var jsLibFilter = $.filter('**/' + config.optimized.lib);
+  var templateFile = void 0;
+  gulp.src(config.allHtmlFiles)
+    .pipe($.minifyHtml({empty: true}))
+    .pipe($.angularTemplatecache(config.templateCache.options))
+    .pipe($.header('"use strict";\n'))
+    .pipe($.tap(function(file) {
+      templateFile = file;
+    }));
+  return gulp.src(config.indexFile)
+    .pipe($.plumber())
+    .pipe(assets)
+    .pipe($.tap(function(file){
+      if(file.path.slice(-6) === config.optimized.app){
+        file.contents = Buffer.concat([file.contents, templateFile.contents]);
+      }
     }))
-    .pipe(gulp.dest('./client/build/img'));
+    .pipe(cssFilter)
+    .pipe($.csso())
+    .pipe(cssFilter.restore())
+    .pipe(jsLibFilter)
+    .pipe($.uglify())
+    .pipe(jsLibFilter.restore())
+    .pipe(jsAppFilter)
+    .pipe($.ngAnnotate())
+    .pipe($.uglify())
+    .pipe(jsAppFilter.restore())
+    .pipe($.rev())
+    .pipe(assets.restore())
+    .pipe($.useref())
+    .pipe($.revReplace())
+    .pipe(gulp.dest(config.destLocation));
 });
 
-gulp.task('video', function () {
-  return gulp.src('./client/src/**/*.{mp4,webm,ogg}')
-    .pipe(gulp.dest('./client/build/video'));
-});
+// Utilities ---
+function watchScssFiles() {
+  return gulp.watch(config.allScssFiles, ['styles']);
+}
 
-gulp.task('templatecache', function () {
-  return gulp.src('./client/src/**/*.html')
-    .pipe(plug.minifyHtml({empty: true}))
-    .pipe(plug.angularTemplatecache('core.templates.js', {module: '<%= name %>.core', standalone: false, root: 'src/'}))
-    .pipe(plug.header('"use strict";\n'))
-    .pipe(gulp.dest('./client/src/core'));
-});
-
-gulp.task('lint', function () {
-  return gulp.src(['./client/src/**/*.js', './server/**/*.js'])
-    .pipe(plug.jshint('./.jshintrc'))
-    .pipe(plug.jshint.reporter(stylish));
-});
-
-gulp.task('watch', function () {
-  gulp.watch(['./client/src/**/*'], ['build']);
-});
-
-gulp.task('build', ['lint', 'sass', 'js', 'img', 'video']);
+function startBrowserSync() {
+  if (browserSync.active) {
+    return;
+  }
+  watchScssFiles();
+  browserSync(config.browserOptions);
+}
