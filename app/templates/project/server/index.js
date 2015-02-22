@@ -1,49 +1,51 @@
-/**
- * Created by Rahul on 19/1/15.
- */
+'use strict';
 
 var path = require('path');
 var express = require('express');
-var bodyParser = require('body-parser');
 var helmet = require('helmet');
 var compress = require('compression');
 var cons = require('consolidate');
+var args = require('yargs').argv;
 
-var config = require('./config/config');
-
-// Modules
-var database = require('./modules/database');
-
-var webapp = path.join(__dirname, '/../client');
 var app = express();
 
 app.use(compress());
-app.use(bodyParser.json());
 app.use(helmet());
-app.use(express.static(webapp));
+
+var webApp;
+if (isDev()) {
+  webApp = path.join(__dirname, '/../client');
+  app.use(express.static(webApp));
+  app.use(express.static('./'));
+} else {
+  webApp = path.join(__dirname, '/../client/build');
+  app.use(express.static(webApp));
+}
 
 app.engine('html', cons.swig);
-
-// set .html as the default extension
 app.set('view engine', 'html');
-app.set('views', webapp);
-
-// Modules
-app.use(database);
+app.set('views', webApp);
 
 app.get('/', function (req, res) {
-  'use strict';
   res.render('index');
 });
 
-var server = app.listen((config.port || 3000), onStart);
+var server = app.listen((process.env.PORT || 3000), onStart);
 
 //Implementation ---
 
 function onStart() {
-  'use strict';
   var host = server.address().address;
   var port = server.address().port;
+  console.log('<%= name %> server listening at http://%s:%s', host, port);
+}
 
-  console.log('Example app listening at http://%s:%s', host, port);
+function isDev() {
+  if (process.env.NODE_ENV && process.env.NODE_ENV === 'dev') {
+    return true;
+  } else if (args.dev) {
+    return true;
+  } else {
+    return false;
+  }
 }
