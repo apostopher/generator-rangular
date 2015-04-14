@@ -48,6 +48,14 @@ gulp.task('dev', ['lint', 'styles', 'bower'], function () {
     .pipe(gulp.dest(config.clientLocation));
 });
 
+gulp.task('templateCache', ['clean-tmpls'], function () {
+  return gulp.src(config.allHtmlFiles)
+    .pipe($.minifyHtml({empty: true}))
+    .pipe($.angularTemplatecache(config.templateCache.options))
+    .pipe($.header('"use strict";\n'))
+    .pipe(gulp.dest(config.tmpLocation));
+});
+
 gulp.task('serve', ['dev'], function (done) {
   return serve(false, done);
 });
