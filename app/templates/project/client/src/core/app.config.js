@@ -9,10 +9,22 @@
     .config(function ($stateProvider, $urlRouterProvider, $compileProvider) {
 
       $compileProvider.debugInfoEnabled(false);
-      $urlRouterProvider.otherwise('home');
+      $urlRouterProvider.otherwise('app.home');
 
       $stateProvider
-        .state('home', {
+        .state('app', {
+          abstract: true,
+          views: {
+            navbar: {
+              controller: 'NavbarCtrl as nav',
+              templateUrl: 'src/navbar/navbar.html'
+            },
+            content: {
+              template: '<div ui-view></div>'
+            }
+          }
+        })
+        .state('app.home', {
           url: '/home',
           controller: 'HomeCtrl as home',
           templateUrl: 'src/home/home.html'

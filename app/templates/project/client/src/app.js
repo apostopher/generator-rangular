@@ -9,6 +9,7 @@
       '<%= name %>.core',
       '<%= name %>.common',
       '<%= name %>.analytics',
+      '<%= name %>.navbar',
       '<%= name %>.home'
     ]);
 }());
