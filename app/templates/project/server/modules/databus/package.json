@@ -1,0 +1,10 @@
+{
+  "name": "databus",
+  "main": "./index.js",
+  "plugin": {
+    "consumes": [],
+    "provides": [
+      "databus"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "database",
+  "main": "./index.js",
+  "plugin": {
+    "consumes": [],
+    "provides": [
+      "database"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "jwt",
+  "main": "./index.js",
+  "plugin": {
+    "consumes": [],
+    "provides": [
+      "jwt"
+    ]
+  }
+}

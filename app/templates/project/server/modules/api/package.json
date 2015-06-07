@@ -1,0 +1,12 @@
+{
+  "name": "apiServer",
+  "main": "./index.js",
+  "plugin": {
+    "consumes": [
+      "database",
+      "databus",
+      "realtime"
+    ],
+    "provides": []
+  }
+}

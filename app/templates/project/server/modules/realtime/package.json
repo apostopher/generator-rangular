@@ -1,0 +1,13 @@
+{
+  "name": "realtime",
+  "main": "./index.js",
+  "plugin": {
+    "consumes": [
+      "jwt",
+      "databus"
+    ],
+    "provides": [
+      "realtime"
+    ]
+  }
+}
