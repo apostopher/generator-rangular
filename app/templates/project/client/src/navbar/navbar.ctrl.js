@@ -9,6 +9,6 @@
   /* @ngInject */
   function NavbarCtrl() {
     var vm = this;
-    vm.appName = <%= name %>;
+    vm.appName = '<%= name %>';
   }
 }());

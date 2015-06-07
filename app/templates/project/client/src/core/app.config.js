@@ -9,7 +9,7 @@
     .config(function ($stateProvider, $urlRouterProvider, $compileProvider) {
 
       $compileProvider.debugInfoEnabled(false);
-      $urlRouterProvider.otherwise('app.home');
+      $urlRouterProvider.otherwise('home');
 
       $stateProvider
         .state('app', {
