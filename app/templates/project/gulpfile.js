@@ -20,6 +20,11 @@ gulp.task('clean', function (done) {
   del(toBeCleaned, done);
 });
 
+gulp.task('clean-templateCache', function (done) {
+  var toBeCleaned = [config.destLocation + 'templates.js'];
+  del(toBeCleaned, done);
+});
+
 gulp.task('lint', function () {
   return gulp.src(config.allJsFiles)
     .pipe($.jscs('./.jscsrc'))
@@ -48,39 +53,27 @@ gulp.task('dev', ['lint', 'styles', 'bower'], function () {
     .pipe(gulp.dest(config.clientLocation));
 });
 
-gulp.task('templateCache', ['clean-tmpls'], function () {
+gulp.task('templateCache', ['clean-templateCache'], function () {
   return gulp.src(config.allHtmlFiles)
     .pipe($.minifyHtml({empty: true}))
     .pipe($.angularTemplatecache(config.templateCache.options))
     .pipe($.header('"use strict";\n'))
-    .pipe(gulp.dest(config.tmpLocation));
+    .pipe(gulp.dest(config.destLocation));
 });
 
 gulp.task('serve', ['dev'], function (done) {
   return serve(false, done);
 });
 
-gulp.task('build', ['clean', 'dev'], function () {
+gulp.task('build', ['clean', 'dev', 'templateCache'], function () {
   var assets = $.useref.assets({searchPath: config.clientLocation});
   var cssFilter = $.filter('**/*.css');
   var jsAppFilter = $.filter('**/' + config.optimized.app);
   var jsLibFilter = $.filter('**/' + config.optimized.lib);
-  var templateFile = void 0;
-  gulp.src(config.allHtmlFiles)
-    .pipe($.minifyHtml({empty: true}))
-    .pipe($.angularTemplatecache(config.templateCache.options))
-    .pipe($.header('"use strict";\n'))
-    .pipe($.tap(function (file) {
-      templateFile = file;
-    }));
+
   return gulp.src(config.indexFile)
     .pipe($.plumber())
     .pipe(assets)
-    .pipe($.tap(function (file) {
-      if (isAppJs(file.path)) {
-        file.contents = Buffer.concat([file.contents, templateFile.contents]);
-      }
-    }))
     .pipe(cssFilter)
     .pipe($.csso())
     .pipe(cssFilter.restore())
